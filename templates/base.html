@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Compression App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+       <a href="/">Home</a>
+       <a href="/text">Text Compress</a>
+       <a href="/image">Image Compress</a>
+       <a href="/video">Video Compress</a>
+       <a href="/audio">Audio Compress</a>
+       <a href="/folder">Folder Compress</a>
+    </nav>
+    <div class="content">
+      {% block content %} {% endblock %}
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
