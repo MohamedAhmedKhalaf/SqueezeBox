@@ -1,6 +1,68 @@
 {% extends 'base.html' %}
-
 {% block content %}
-    <h1>Text Compression</h1>
-    <p>Text compression functionality will be added soon.</p>
+<div class="container">
+    <h1>Text Compression 📝</h1>
+    
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.text_data.label }}
+            {{ form.text_data(class="form-control") }}
+            <div class="sample-texts">
+                <p>Try these sample texts:</p>
+                <button type="button" class="sample-btn" onclick="fillSample('rle')">RLE Sample</button>
+                <button type="button" class="sample-btn" onclick="fillSample('huffman')">Huffman Sample</button>
+                <button type="button" class="sample-btn" onclick="fillSample('arithmetic')">Arithmetic Sample</button>
+            </div>
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+
+    {% if result %}
+    <div class="result-container">
+        <h3>Compression Results</h3>
+        <div class="result-summary">
+            <div class="result-item">
+                <span class="result-label">Algorithm:</span>
+                <span class="result-value">{{ result.algorithm }}</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Compression Ratio:</span>
+                <span class="result-value">{{ "%.2f"|format(result.compression_ratio) }}</span>
+            </div>
+        </div>
+
+        {% if result.algorithm == 'Huffman' %}
+        <div class="codes-section">
+            <h4>Character Codes:</h4>
+            <div class="codes-grid">
+                {% for char, code in result.codes.items() %}
+                    <div class="code-item">
+                        {% if char == ' ' %}
+                            <span class="char">SPACE:</span>
+                        {% else %}
+                            <span class="char">'{{ char }}':</span>
+                        {% endif %}
+                        <span class="code">{{ code }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-results">
+            <div class="result-text">
+                <h4>Compressed Text:</h4>
+                <div class="text-content">{{ result.compressed }}</div>
+            </div>
+            
+            <div class="result-text">
+                <h4>Decompressed Text:</h4>
+                <div class="text-content">{{ result.decompressed }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
 {% endblock %}
