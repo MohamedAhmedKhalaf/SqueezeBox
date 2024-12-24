@@ -1,35 +1,60 @@
-from PIL import Image
 import os
+from flask import Blueprint, render_template, flash, current_app
+from werkzeug.utils import secure_filename
+from PIL import Image
+from forms import ImageForm
+from config import OUTPUT_FOLDER
 
-def compress_image(input_path: str, output_path: str, quality: int):
+image_bp = Blueprint('image', __name__)
+
+def compress_image(input_path, output_path, quality=30):
     try:
         original_size = os.path.getsize(input_path)
 
         with Image.open(input_path) as img:
             if img.mode != "RGB":
                 img = img.convert("RGB")
-            
-            img.save(output_path, "JPEG", quality=quality)
+
+            img.save(output_path, "JPEG", optimize=True, quality=quality)
 
         compressed_size = os.path.getsize(output_path)
-
         compression_ratio = original_size / compressed_size
 
-        print(f"Image successfully compressed and saved at: {output_path}")
-        print(f"Original size: {original_size / 1024:.2f} KB")
-        print(f"Compressed size: {compressed_size / 1024:.2f} KB")
-        print(f"Compression ratio: {compression_ratio:.2f}")
-    
+        return None, original_size, compressed_size, compression_ratio
     except Exception as e:
-        print(f"Error compressing image: {e}")
+        return str(e), None, None, None
 
+@image_bp.route('/image', methods=['GET', 'POST'])
+def image():
+    form = ImageForm()
 
-if __name__ == "__main__":
-    input_file = r"simple.jpg"
-    output_file = "output_compressed.JPEG"
-    compression_quality = 20  
+    if form.validate_on_submit():
+        if form.image_file.data:
+            try:
+                os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    if not os.path.exists(input_file):
-        print(f"Input file '{input_file}' does not exist. Place your file in the same directory.")
-    else:
-        compress_image(input_file, output_file, compression_quality)
+                filename = secure_filename(form.image_file.data.filename)
+                input_path = os.path.join(OUTPUT_FOLDER, f"temp_{filename}")
+                output_path = os.path.join(OUTPUT_FOLDER, f"compressed_{filename}")
+
+                form.image_file.data.save(input_path)
+                quality = max(10, min(100, form.quality.data))
+
+                error, original_size, compressed_size, compression_ratio = compress_image(input_path, output_path, quality)
+
+                if error:
+                    flash(f"Compression error: {error}", 'danger')
+                else:
+                    flash(f"Image compressed successfully! File saved as: compressed_{filename}", 'success')
+                    flash(f"Original size: {original_size / 1024:.2f} KB", 'info')
+                    flash(f"Compressed size: {compressed_size / 1024:.2f} KB", 'info')
+                    flash(f"Compression ratio: {compression_ratio:.2f}", 'info')
+
+            except Exception as e:
+                flash(f"Error: {str(e)}", 'danger')
+
+            finally:
+                if os.path.exists(input_path):
+                    os.remove(input_path)
+
+    return render_template('image.html', form=form)
