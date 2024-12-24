@@ -1,24 +1,66 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Folder Compression</h1>
+    <h1>File/Folder Compression</h1>
     <form method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
+        
         <div class="form-group">
+            <!-- File input -->
             {{ form.folder_file.label }}
-            {{ form.folder_file(class_="test") }}
-            <label class="custom-file-label up" for="folder_file">Choose a folder</label>
-
+            {{ form.folder_file(class_="test", id="file_input") }}
+            <!-- Label to display the selected file name -->
+            <label class="custom-file-label up" for="file_input" id="file_label">Choose a file</label>
         </div>
+
+        <div class="form-group">
+            <!-- Folder input -->
+            <input type="file" id="folder_input" name="folder_file" class="test" webkitdirectory directory>
+            <label class="custom-file-label up" for="folder_input" id="folder_label">Choose a folder</label>
+        </div>
+        
         <button type="submit">Compress</button>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <ul class=flashes>
+            {% if messages %}
+                <ul class="flashes">
                     {% for category, message in messages %}
-                      <li class="{{ category }}">{{ message }}</li>
+                        <li class="{{ category }}">{{ message }}</li>
                     {% endfor %}
-                    </ul>
-                {% endif %}
-                {% endwith %}
+                </ul>
+            {% endif %}
+        {% endwith %}
     </form>
+
+    <!-- JavaScript to update label with selected file name -->
+    <script>
+        // Function to clear the other selection when one is chosen
+        function clearOtherSelection(selectedInputId) {
+            const fileInput = document.getElementById("file_input");
+            const folderInput = document.getElementById("folder_input");
+
+            // Clear the other input when one is selected
+            if (selectedInputId === "file_input") {
+                folderInput.value = "";  // Clear folder input
+                document.getElementById('folder_label').textContent = "Choose a folder";  // Reset label
+            } else {
+                fileInput.value = "";  // Clear file input
+                document.getElementById('file_label').textContent = "Choose a file";  // Reset label
+            }
+        }
+
+        // File input update
+        document.getElementById('file_input').addEventListener('change', function(event) {
+            var fileName = event.target.files.length > 0 ? event.target.files[0].name : "Choose a file";
+            document.getElementById('file_label').textContent = fileName;
+            clearOtherSelection('file_input');
+        });
+
+        // Folder input update
+        document.getElementById('folder_input').addEventListener('change', function(event) {
+            var folderName = event.target.files.length > 0 ? event.target.files[0].webkitRelativePath.split("/")[0] : "Choose a folder";
+            document.getElementById('folder_label').textContent = folderName;
+            clearOtherSelection('folder_input');
+        });
+    </script>
 {% endblock %}
