@@ -1,50 +1,55 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Video Compression</h1>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.video_file.label }}
-            {{ form.video_file }}
-            {% for error in form.video_file.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{form.target_size.label}}
-            {{form.target_size}}
-            {% for error in form.target_size.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </div>
-          <div class="form-group">
-            {{form.use_gpu.label}}
-            {{form.use_gpu}}
-             {% for error in form.use_gpu.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </div>
-        <div class="form-group">
-            {{form.output_location.label}}
-            {{form.output_location}}
-            {% for error in form.output_location.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-             {% endfor %}
-        </div>
-        {{ form.submit() }}
-    </form>
-    {% if compressed_file %}
-        <h2>Compressed Video</h2>
-        <p>Original Size: {{ original_size|round(2) }} MB</p>
-        <p>Compressed Size: {{ compressed_size|round(2) }} MB</p>
-        <p>Entropy: {{ entropy|round(2) }}</p>
-        <video controls width="320" height="240">
-          <source src="data:video/mp4;base64,{{ compressed_file }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    {% endif %}
+<div class="container">
+  <h1>Video Compression 🎞️</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  {% for category, message in messages %}
+  <div
+    class="alert alert-{{ category }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert">
+      <span>&times;</span>
+    </button>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <!-- File Upload Input -->
+    <div class="form-group">
+      {{ form.video_file.label }}
+      <label for="video_file" class="custom-file-label up">
+        <i class="fas fa-upload"></i> Upload File
+      </label>
+      {{ form.video_file(class="form-control-file d-none test", id="video_file") }}
+      {% if form.video_file.errors %}
+      {% for error in form.video_file.errors %}
+      <span class="text-danger">{{ error }}</span>
+      {% endfor %}
+      {% endif %}
+      <small class="form-text text-muted">
+        Supported formats: MP4, AVI, MKV (max 500MB)
+      </small>
+    </div>
+
+    <!-- Submit Button -->
+    {{ form.submit(class="btn btn-primary") }}
+  </form>
+</div>
+
+<script>
+  document.getElementById("video_file").addEventListener("change", function () {
+    const label = document.querySelector(".custom-file-label");
+    const fileName = this.files[0] ? this.files[0].name : "Upload File";
+    label.innerHTML = `<i class="fas fa-upload"></i> ${fileName}`;
+  });
+</script>
 {% endblock %}
