@@ -21,3 +21,7 @@ class VideoForm(FlaskForm):
 class AudioForm(FlaskForm):
     audio_file = FileField("Select Audio", validators=[FileAllowed(ALLOWED_EXTENSIONS)])
     submit = SubmitField("Compress Audio")
+
+class FolderForm(FlaskForm):
+    folder_file = FileField("Select Folder", validators=[])
+    submit = SubmitField("Compress Folder")

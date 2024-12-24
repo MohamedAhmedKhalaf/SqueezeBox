@@ -160,3 +160,18 @@ input:hover {
 h1 {
   font-size: 40px;
 }
+
+.flashes {
+ list-style: none;
+ padding: 0;
+ margin-top: 10px;
+}
+.flashes li{
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+.flashes li.error {
+ background-color: #f8d7da;
+ color: #721c24;
+}
