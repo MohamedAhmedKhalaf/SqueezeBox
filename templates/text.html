@@ -46,6 +46,7 @@
                 {% endfor %}
             </div>
         </div>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#treeModal">Show Tree</button>
         {% endif %}
 
         <div class="text-results">
@@ -60,7 +61,100 @@
             </div>
         </div>
     </div>
+    
+    {% if result.algorithm == 'Huffman' %}
+    <div class="modal fade" id="treeModal" tabindex="-1" role="dialog" aria-labelledby="treeModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="treeModalLabel">Huffman Tree</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <canvas id="huffmanTreeCanvas" width="600" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     {% endif %}
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#treeModal').on('show.bs.modal', function (e) {
+    {% if result and result.algorithm == 'Huffman' %}
+        const treeData = {{ result.tree_json | safe }};
+        console.log("treeData:", treeData); // <--- ADD THIS LINE
+        if (treeData) {
+        drawTree(treeData, 'huffmanTreeCanvas');
+        } else {
+        console.error("No tree data to display");
+        //display error message
+        document.getElementById('huffmanTreeCanvas').innerHTML = "An error occured";
+
+        }
+    {% endif %}
+    });
+});
+    
+function drawTree(treeData, canvasId) {
+        console.log("drawTree called with:", treeData, canvasId);
+        const canvas = document.getElementById(canvasId);
+        console.log("canvas:", canvas);
+        const ctx = canvas.getContext('2d');
+        console.log("ctx:", ctx);
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+        const nodeRadius = 15;
+        const horizontalSpacing = 50;
+        const verticalSpacing = 70;
+
+        function drawNode(node, x, y, level) {
+            if (!node) return;
+            console.log("Drawing node:", node, x, y, level); // <--- ADD THIS LINE
+
+          // Draw node circle
+            ctx.beginPath();
+            ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ddd';
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw node text
+            ctx.fillStyle = 'black';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+
+            const label = node.char || '•';
+            const textY = y + 5; // Adjust vertical position for text
+
+            ctx.fillText(label, x, textY);
+
+            // Draw lines to children
+            const leftChildX = x - horizontalSpacing / (level + 1);
+            const rightChildX = x + horizontalSpacing / (level + 1);
+            const childY = y + verticalSpacing;
+
+
+          if (node.left) {
+                ctx.beginPath();
+                ctx.moveTo(x, y + nodeRadius);
+                ctx.lineTo(leftChildX, childY - nodeRadius);
+                ctx.stroke();
+                drawNode(node.left, leftChildX, childY, level + 1);
+            }
+           if (node.right) {
+                ctx.beginPath();
+                ctx.moveTo(x, y + nodeRadius);
+                ctx.lineTo(rightChildX, childY - nodeRadius);
+                ctx.stroke();
+                 drawNode(node.right, rightChildX, childY, level + 1);
+            }
+        }
+        drawNode(treeData, canvas.width / 2, 30, 0);
+        }
+</script>
 
 {% endblock %}
