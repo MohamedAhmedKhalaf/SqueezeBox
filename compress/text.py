@@ -4,6 +4,7 @@ import math
 from flask import Blueprint, render_template, request
 from forms import TextForm
 import sys
+import json  # Import the json module
 
 text_bp = Blueprint('text', __name__)
 
@@ -16,6 +17,14 @@ class Node:
         
     def __lt__(self, other):
         return self.freq < other.freq
+    def to_dict(self):
+        return {
+            'char': self.char,
+            'freq': self.freq,
+            'left': self.left.to_dict() if self.left else None,
+            'right': self.right.to_dict() if self.right else None
+        }
+        
 
 class CompressionAnalyzer:
     def calculate_entropy(self, text):
@@ -155,6 +164,12 @@ class TextCompressor:
                     
         return "".join(result)
 
+    def get_huffman_tree_json(self, tree):
+        """Converts the Huffman tree to a JSON serializable dictionary."""
+        if tree:
+            return json.dumps(tree.to_dict())
+        return None
+
 @text_bp.route('/text', methods=['GET', 'POST'])
 def text():
     form = TextForm()
@@ -180,13 +195,14 @@ def text():
         elif algorithm == 'huffman':
             compressed, codes, tree = compressor.huffman_compress(text_data)
             decompressed = compressor.huffman_decompress(compressed, tree)
+            tree_json = compressor.get_huffman_tree_json(tree)
             result = {
                 'algorithm': 'Huffman',
                 'compressed': compressed,
                 'decompressed': decompressed,
                 'codes': codes,
-                'compression_ratio': len(compressed)/(len(text_data) * 8)
-            }
+                'compression_ratio': len(compressed)/(len(text_data) * 8),
+                'tree_json': tree_json            }
             
         else:  # arithmetic
             compressed, prob = compressor.arithmetic_compress(text_data)
