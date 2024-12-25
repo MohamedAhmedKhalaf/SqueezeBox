@@ -1,22 +1,20 @@
 {% extends 'base.html' %}
+
+
 {% block content %}
 <div class="container">
     <h1>Text Compression 📝</h1>
     
+    <div class="content">
     <form method="post">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.text_data.label }}
             {{ form.text_data(class="form-control") }}
-            <div class="sample-texts">
-                <p>Try these sample texts:</p>
-                <button type="button" class="sample-btn" onclick="fillSample('rle')">RLE Sample</button>
-                <button type="button" class="sample-btn" onclick="fillSample('huffman')">Huffman Sample</button>
-                <button type="button" class="sample-btn" onclick="fillSample('arithmetic')">Arithmetic Sample</button>
-            </div>
         </div>
         {{ form.submit(class="btn btn-primary") }}
     </form>
+  </div>
 
     {% if result %}
     <div class="result-container">

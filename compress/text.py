@@ -1,13 +1,9 @@
-# compress/text.py
 from collections import Counter, defaultdict
 import heapq
 import math
-import numpy as np
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request
 from forms import TextForm
 import sys
-
-
 
 text_bp = Blueprint('text', __name__)
 
@@ -37,19 +33,7 @@ class CompressionAnalyzer:
             'max_freq': max_freq,
             'distribution_score': max_freq / len(text)
         }
-    
-    def select_algorithm(self, text):
-        entropy = self.calculate_entropy(text)
-        distribution = self.analyze_distribution(text)
-        
-        # Modified selection criteria
-        if len(set(text)) < 6 and distribution['distribution_score'] > 0.3:
-            return 'rle'
-        elif entropy < 4.5 and distribution['unique_chars'] < 64:
-            return 'huffman'
-        else:
-            return 'arithmetic'
-    
+
     def select_algorithm(self, text):
         entropy = self.calculate_entropy(text)
         distribution = self.analyze_distribution(text)
@@ -83,11 +67,12 @@ class TextCompressor:
         i = 0
         while i < len(compressed):
             count = ""
-            while compressed[i].isdigit():
+            while i < len(compressed) and compressed[i].isdigit():
                 count += compressed[i]
                 i += 1
-            decompressed.append(compressed[i] * int(count))
-            i += 1
+            if i < len(compressed):
+                decompressed.append(compressed[i] * int(count))
+                i += 1
         return "".join(decompressed)
 
     def huffman_compress(self, text):
@@ -174,43 +159,43 @@ class TextCompressor:
 def text():
     form = TextForm()
     if form.validate_on_submit():
-        text = form.text_data.data
+        text_data = form.text_data.data
         
         analyzer = CompressionAnalyzer()
         compressor = TextCompressor()
         
-        algorithm = analyzer.select_algorithm(text)
+        algorithm = analyzer.select_algorithm(text_data)
         result = {}
         
         if algorithm == 'rle':
-            compressed = compressor.rle_compress(text)
+            compressed = compressor.rle_compress(text_data)
             decompressed = compressor.rle_decompress(compressed)
             result = {
                 'algorithm': 'RLE',
                 'compressed': compressed,
                 'decompressed': decompressed,
-                'compression_ratio': len(compressed)/len(text)
+                'compression_ratio': len(compressed)/len(text_data)
             }
         
         elif algorithm == 'huffman':
-            compressed, codes, tree = compressor.huffman_compress(text)
+            compressed, codes, tree = compressor.huffman_compress(text_data)
             decompressed = compressor.huffman_decompress(compressed, tree)
             result = {
                 'algorithm': 'Huffman',
                 'compressed': compressed,
                 'decompressed': decompressed,
                 'codes': codes,
-                'compression_ratio': len(compressed)/(len(text) * 8)
+                'compression_ratio': len(compressed)/(len(text_data) * 8)
             }
             
         else:  # arithmetic
-            compressed, prob = compressor.arithmetic_compress(text)
-            decompressed = compressor.arithmetic_decompress(compressed, prob, len(text))
+            compressed, prob = compressor.arithmetic_compress(text_data)
+            decompressed = compressor.arithmetic_decompress(compressed, prob, len(text_data))
             result = {
                 'algorithm': 'Arithmetic',
                 'compressed': compressed,
                 'decompressed': decompressed,
-                'compression_ratio': sys.getsizeof(compressed)/sys.getsizeof(text)
+                'compression_ratio': sys.getsizeof(compressed)/sys.getsizeof(text_data)
             }
             
         return render_template('text.html', form=form, result=result)
