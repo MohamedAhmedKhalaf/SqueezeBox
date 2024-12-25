@@ -189,7 +189,7 @@ def text():
                 'algorithm': 'RLE',
                 'compressed': compressed,
                 'decompressed': decompressed,
-                'compression_ratio': len(compressed)/len(text_data)
+                'compression_ratio': (len(text_data))/len(compressed)
             }
         
         elif algorithm == 'huffman':
@@ -201,7 +201,7 @@ def text():
                 'compressed': compressed,
                 'decompressed': decompressed,
                 'codes': codes,
-                'compression_ratio': len(compressed)/(len(text_data) * 8),
+                'compression_ratio': (len(text_data) * 8)/len(compressed),
                 'tree_json': tree_json            }
             
         else:  # arithmetic
@@ -211,7 +211,7 @@ def text():
                 'algorithm': 'Arithmetic',
                 'compressed': compressed,
                 'decompressed': decompressed,
-                'compression_ratio': sys.getsizeof(compressed)/sys.getsizeof(text_data)
+                'compression_ratio': sys.getsizeof(text_data)/sys.getsizeof(compressed)
             }
             
         return render_template('text.html', form=form, result=result)
