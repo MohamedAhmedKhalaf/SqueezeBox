@@ -23,6 +23,9 @@ nav {
     position: relative;
     top: -7px;
   }
+  .micc {
+    margin-top: 20px;
+  }
   nav a {
     color: black;
     text-decoration: none;
@@ -106,6 +109,7 @@ li a {
     text-decoration: none;
     border-radius: 5px;
     transition: all 0.5s;
+    width: 175px;
 }
 
 li a:hover {
