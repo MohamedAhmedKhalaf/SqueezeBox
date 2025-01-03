@@ -9,7 +9,7 @@ from compress.image import image_bp
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB limit
+app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024  # 500MB limit
 app.register_blueprint(text_bp)
 app.register_blueprint(video_bp)
 app.register_blueprint(image_bp) 
